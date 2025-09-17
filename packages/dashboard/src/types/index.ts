@@ -10,6 +10,35 @@ export interface DashboardMetrics {
   errorRate: number;
   adaptationSuccessRate: number;
   userSatisfactionScore: number;
+  cognitive?: CognitiveAnalytics;
+  behavior?: UserBehaviorData;
+  lastUpdated?: Date;
+}
+
+export interface UserBehaviorData {
+  mouseMovements: {
+    averageSpeed: number;
+    totalDistance: number;
+    clickAccuracy: number;
+    hoverTime: number;
+  };
+  keyboardInteraction: {
+    typingSpeed: number;
+    errorRate: number;
+    pauseFrequency: number;
+  };
+  navigationPatterns: {
+    pageViews: number;
+    sessionDuration: number;
+    bounceRate: number;
+    scrollDepth: number;
+  };
+  cognitiveLoad: {
+    attentionScore: number;
+    focusTime: number;
+    distractionEvents: number;
+    mentalEffortLevel: 'low' | 'medium' | 'high';
+  };
 }
 
 export interface CognitiveAnalytics {
