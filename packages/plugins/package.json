@@ -1,0 +1,116 @@
+{
+  "name": "@cogui/plugins",
+  "version": "0.1.0",
+  "description": "CogUI Plugin Architecture & Marketplace - Extensible plugin system with marketplace integration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cogui/cogui.git",
+    "directory": "packages/plugins"
+  },
+  "keywords": [
+    "cogui",
+    "plugins",
+    "marketplace",
+    "extensibility",
+    "architecture",
+    "third-party",
+    "modules",
+    "addons",
+    "extensions",
+    "ecosystem"
+  ],
+  "author": "CogUI Team",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "validate-plugins": "node scripts/validate-plugins.js",
+    "publish-plugin": "node scripts/publish-plugin.js"
+  },
+  "dependencies": {
+    "semver": "^7.5.4",
+    "ajv": "^8.12.0",
+    "jsonschema": "^1.4.1",
+    "uuid": "^9.0.0",
+    "lodash": "^4.17.21",
+    "rxjs": "^7.8.1",
+    "jszip": "^3.10.1",
+    "crypto-js": "^4.1.1",
+    "node-fetch": "^3.3.1",
+    "tar": "^6.1.15"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.195",
+    "@types/uuid": "^9.0.2",
+    "@types/crypto-js": "^4.1.1",
+    "@types/tar": "^6.1.5",
+    "typescript": "^5.1.6",
+    "jest": "^29.6.1",
+    "@types/jest": "^29.5.3",
+    "ts-jest": "^29.1.1",
+    "eslint": "^8.45.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0"
+  },
+  "peerDependencies": {
+    "@cogui/core": "workspace:*",
+    "react": ">=16.8.0"
+  },
+  "files": [
+    "dist",
+    "src",
+    "schemas",
+    "templates",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./manager": {
+      "import": "./dist/manager/index.js",
+      "require": "./dist/manager/index.js",
+      "types": "./dist/manager/index.d.ts"
+    },
+    "./marketplace": {
+      "import": "./dist/marketplace/index.js",
+      "require": "./dist/marketplace/index.js",
+      "types": "./dist/marketplace/index.d.ts"
+    },
+    "./sdk": {
+      "import": "./dist/sdk/index.js",
+      "require": "./dist/sdk/index.js",
+      "types": "./dist/sdk/index.d.ts"
+    },
+    "./security": {
+      "import": "./dist/security/index.js",
+      "require": "./dist/security/index.js",
+      "types": "./dist/security/index.d.ts"
+    },
+    "./validation": {
+      "import": "./dist/validation/index.js",
+      "require": "./dist/validation/index.js",
+      "types": "./dist/validation/index.d.ts"
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/cogui"
+  }
+}
