@@ -240,3 +240,40 @@ export const CogUIProvider: React.FC<CogUIProviderProps> = ({
     // High stress adaptations
     if (state.stressLevel === 'high') {
       if (adaptiveConfig.adjustAnimations) {
+        adjustments.reducedMotion = true;
+      }
+      adjustments.largeClickTargets = true;
+    }
+
+    if (Object.keys(adjustments).length > 0) {
+      updatePreferences(adjustments);
+    }
+  };
+
+  const contextValue: CogUIContextType = {
+    theme,
+    preferences,
+    cognitiveState,
+    adaptiveConfig,
+    updateTheme,
+    updatePreferences,
+    updateCognitiveState,
+    updateAdaptiveConfig,
+    resetPreferences,
+  };
+
+  return (
+    <CogUIContext.Provider value={contextValue}>
+      {children}
+    </CogUIContext.Provider>
+  );
+};
+
+// Hook for using CogUI context
+export const useCogUI = () => {
+  const context = useContext(CogUIContext);
+  if (context === undefined) {
+    throw new Error('useCogUI must be used within a CogUIProvider');
+  }
+  return context;
+};
