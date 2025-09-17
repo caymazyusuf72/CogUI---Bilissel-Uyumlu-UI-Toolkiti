@@ -1,0 +1,57 @@
+{
+  "name": "cogui-toolkit",
+  "version": "0.1.0",
+  "description": "Bilişsel Uyumlu UI Toolkit - Nöro-çeşitli kullanıcılar için erişilebilir ve adaptif UI bileşenleri",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "dev": "yarn workspaces run dev",
+    "test": "yarn workspaces run test",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "type-check": "yarn workspaces run type-check",
+    "storybook": "cd packages/storybook && yarn storybook",
+    "build-storybook": "cd packages/storybook && yarn build-storybook",
+    "clean": "yarn workspaces run clean && rm -rf node_modules",
+    "setup": "yarn install && yarn workspaces run build"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "prettier": "^3.0.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "yarn": ">=1.22.0"
+  },
+  "keywords": [
+    "ui",
+    "components",
+    "accessibility",
+    "cognitive",
+    "neurodiverse",
+    "adaptive",
+    "react",
+    "typescript",
+    "sensors"
+  ],
+  "author": "CogUI Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cogui/cogui-toolkit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cogui/cogui-toolkit/issues"
+  },
+  "homepage": "https://cogui.dev"
+}
