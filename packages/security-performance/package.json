@@ -1,0 +1,307 @@
+{
+  "name": "@cogui/security-performance",
+  "version": "1.0.0",
+  "description": "Advanced security and performance optimization suite for CogUI cognitive-adaptive UI framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "security:audit": "npm audit && snyk test",
+    "security:scan": "semgrep --config auto src/",
+    "performance:test": "autocannon http://localhost:3000",
+    "performance:profile": "node --prof src/index.js",
+    "vulnerability:check": "retire --path src/",
+    "dependency:check": "depcheck",
+    "bundle:analyze": "webpack-bundle-analyzer dist/stats.json",
+    "clean": "rm -rf dist coverage .nyc_output"
+  },
+  "keywords": [
+    "cogui",
+    "security",
+    "performance",
+    "optimization",
+    "middleware",
+    "authentication",
+    "authorization",
+    "rate-limiting",
+    "caching",
+    "compression",
+    "vulnerability",
+    "monitoring",
+    "cognitive-ui",
+    "accessibility",
+    "enterprise"
+  ],
+  "author": "CogUI Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cogui/cogui.git",
+    "directory": "packages/security-performance"
+  },
+  "bugs": {
+    "url": "https://github.com/cogui/cogui/issues"
+  },
+  "homepage": "https://cogui.dev",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "express-slow-down": "^2.0.1",
+    "express-validator": "^7.0.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "passport-oauth2": "^1.7.0",
+    "speakeasy": "^2.0.0",
+    "qrcode": "^1.5.3",
+    "argon2": "^0.31.2",
+    "compression": "^1.7.4",
+    "redis": "^4.6.11",
+    "ioredis": "^5.3.2",
+    "memory-cache": "^0.2.0",
+    "lru-cache": "^10.1.0",
+    "sharp": "^0.33.0",
+    "imagemin": "^8.0.1",
+    "terser": "^5.24.0",
+    "clean-css": "^5.3.3",
+    "html-minifier-terser": "^7.2.0",
+    "brotli": "^1.3.3",
+    "zlib": "^1.0.5",
+    "csrf": "^3.1.0",
+    "express-session": "^1.17.3",
+    "connect-redis": "^7.1.0",
+    "express-brute": "^1.0.1",
+    "express-brute-redis": "^0.0.1",
+    "joi": "^17.11.0",
+    "xss": "^1.0.14",
+    "dompurify": "^3.0.6",
+    "validator": "^13.11.0",
+    "express-mongo-sanitize": "^2.2.0",
+    "hpp": "^0.2.3",
+    "cors": "^2.8.5",
+    "express-enforce-ssl": "^1.1.0",
+    "nocache": "^4.0.0",
+    "content-security-policy": "^0.3.0",
+    "referrer-policy": "^1.2.0",
+    "feature-policy": "^0.6.0",
+    "prom-client": "^15.1.0",
+    "winston": "^3.11.0",
+    "express-winston": "^4.2.0",
+    "node-cron": "^3.0.3",
+    "semver": "^7.5.4",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "uuid": "^9.0.1",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/passport": "^1.0.16",
+    "@types/passport-jwt": "^3.0.13",
+    "@types/passport-local": "^1.0.38",
+    "@types/speakeasy": "^2.0.10",
+    "@types/qrcode": "^1.5.5",
+    "@types/compression": "^1.7.5",
+    "@types/memory-cache": "^0.2.5",
+    "@types/validator": "^13.11.7",
+    "@types/express-session": "^1.17.10",
+    "@types/hpp": "^0.2.5",
+    "@types/cors": "^2.8.17",
+    "@types/lodash": "^4.14.202",
+    "@types/uuid": "^9.0.7",
+    "@types/jest": "^29.5.8",
+    "@types/supertest": "^2.0.16",
+    "typescript": "^5.3.2",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "supertest": "^6.3.3",
+    "eslint": "^8.54.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "prettier": "^3.1.0",
+    "snyk": "^1.1253.0",
+    "semgrep": "^1.50.0",
+    "retire": "^4.0.3",
+    "depcheck": "^1.4.7",
+    "autocannon": "^7.12.0",
+    "webpack-bundle-analyzer": "^4.10.1",
+    "concurrently": "^8.2.2"
+  },
+  "peerDependencies": {
+    "@cogui/core": "^1.0.0",
+    "@cogui/sensors": "^1.0.0",
+    "express": "^4.18.0"
+  },
+  "files": [
+    "dist",
+    "config",
+    "README.md",
+    "CHANGELOG.md",
+    "SECURITY.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts",
+      "!src/index.ts"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.ts"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+    },
+    "rules": {
+      "@typescript-eslint/explicit-function-return-type": "error",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unsafe-assignment": "error",
+      "@typescript-eslint/no-unsafe-member-access": "error",
+      "prefer-const": "error",
+      "no-var": "error",
+      "security/detect-object-injection": "error",
+      "security/detect-non-literal-fs-filename": "error",
+      "security/detect-unsafe-regex": "error"
+    },
+    "plugins": [
+      "security"
+    ]
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false
+  },
+  "config": {
+    "security": {
+      "authentication": {
+        "jwtSecret": "change-this-in-production",
+        "jwtExpiresIn": "24h",
+        "bcryptRounds": 12,
+        "maxLoginAttempts": 5,
+        "lockoutTime": 15,
+        "sessionTimeout": 30,
+        "twoFactorAuth": true
+      },
+      "rateLimit": {
+        "windowMs": 15,
+        "max": 100,
+        "skipSuccessfulRequests": true,
+        "skipFailedRequests": false
+      },
+      "headers": {
+        "contentSecurityPolicy": {
+          "directives": {
+            "defaultSrc": ["'self'"],
+            "styleSrc": ["'self'", "'unsafe-inline'"],
+            "scriptSrc": ["'self'"],
+            "imgSrc": ["'self'", "data:", "https:"],
+            "connectSrc": ["'self'"],
+            "fontSrc": ["'self'"],
+            "objectSrc": ["'none'"],
+            "mediaSrc": ["'self'"],
+            "frameSrc": ["'none'"]
+          }
+        },
+        "hsts": {
+          "maxAge": 31536000,
+          "includeSubDomains": true,
+          "preload": true
+        }
+      },
+      "csrf": {
+        "cookie": {
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "strict"
+        }
+      },
+      "bruteForce": {
+        "freeRetries": 2,
+        "minWait": 5,
+        "maxWait": 60,
+        "lifetime": 3600
+      }
+    },
+    "performance": {
+      "caching": {
+        "redis": {
+          "ttl": 3600,
+          "maxMemory": "100mb"
+        },
+        "memory": {
+          "max": 500,
+          "maxAge": 1800
+        }
+      },
+      "compression": {
+        "level": 6,
+        "threshold": 1024,
+        "filter": "text"
+      },
+      "optimization": {
+        "imageCompression": true,
+        "cssMinification": true,
+        "jsMinification": true,
+        "htmlMinification": true,
+        "brotliCompression": true
+      }
+    },
+    "monitoring": {
+      "metricsCollection": true,
+      "performanceTracking": true,
+      "securityAudit": true,
+      "vulnerabilityScanning": true
+    }
+  },
+  "volta": {
+    "node": "18.19.0",
+    "npm": "10.2.3"
+  }
+}
