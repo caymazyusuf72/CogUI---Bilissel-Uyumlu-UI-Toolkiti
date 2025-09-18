@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CogUI is offline - Please check your internet connection">
+    <title>You're Offline - CogUI</title>
+    
+    <!-- Accessibility Features -->
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: dark)">
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --error: #dc2626;
+            --warning: #d97706;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --line-height-tight: 1.25;
+            --line-height-normal: 1.5;
+            --line-height-relaxed: 1.75;
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #0f172a;
+                --surface: #1e293b;
+                --text-primary: #f1f5f9;
+                --text-secondary: #94a3b8;
+                --border: #334155;
+            }
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #0000ff;
+                --background: #ffffff;
+                --text-primary: #000000;
+                --text-secondary: #333333;
+                --border: #000000;
+            }
+            
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --primary-color: #00ffff;
+                    --background: #000000;
+                    --text-primary: #ffffff;
+                    --text-secondary: #cccccc;
+                    --border: #ffffff;
+                }
+            }
+        }
+        
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: var(--line-height-normal);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+        }
+        
+        .container {
+            max-width: 32rem;
+            width: 100%;
+            text-align: center;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: var(--space-xl);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .icon {
+            width: 5rem;
+            height: 5rem;
+            margin: 0 auto var(--space-lg);
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--font-size-2xl);
+            color: white;
+        }
+        
+        .title {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+        
+        .description {
+            font-size: var(--font-size-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-sm) var(--space-lg);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 2.75rem;
+        }
+        
+        .button:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        .button-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .button-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        
+        .button-secondary {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        
+        .button-secondary:hover:not(:disabled) {
+            background-color: var(--surface);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-top: var(--space-lg);
+        }
+        
+        .status-indicator {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: var(--error);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-indicator.online {
+            background-color: #10b981;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .features {
+            margin-top: var(--space-xl);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--border);
+        }
+        
+        .features-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
+        }
+        
+        .features-list {
+            display: grid;
+            gap: var(--space-sm);
+            text-align: left;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+        
+        .feature-icon {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+            color: var(--primary-color);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 640px) {
+            body {
+                padding: var(--space-sm);
+            }
+            
+            .container {
+                padding: var(--space-lg);
+            }
+            
+            .title {
+                font-size: var(--font-size-2xl);
+            }
+            
+            .description {
+                font-size: var(--font-size-base);
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .actions, .status {
+                display: none;
+            }
+        }
+        
+        /* Screen reader improvements */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon" aria-hidden="true">
+            📡
+        </div>
+        
+        <h1 class="title">You're Currently Offline</h1>
+        
+        <p class="description">
+            Don't worry! CogUI works offline too. Some features are still available 
+            while you're disconnected from the internet.
+        </p>
+        
+        <div class="actions">
+            <button 
+                class="button button-primary" 
+                onclick="location.reload()"
+                aria-describedby="retry-description"
+            >
+                🔄 Try Again
+            </button>
+            <span id="retry-description" class="sr-only">
+                Reload the page to check if internet connection is restored
+            </span>
+            
+            <button 
+                class="button button-secondary" 
+                onclick="goHome()"
+                aria-describedby="home-description"
+            >
+                🏠 Go to Homepage
+            </button>
+            <span id="home-description" class="sr-only">
+                Navigate to the main application page
+            </span>
+        </div>
+        
+        <div class="status" role="status" aria-live="polite">
+            <span class="status-indicator" id="connectionStatus" aria-hidden="true"></span>
+            <span id="statusText">Checking connection...</span>
+        </div>
+        
+        <div class="features">
+            <h2 class="features-title">Available Offline Features</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <span class="feature-icon" aria-hidden="true">✅</span>
+                    <span>Previously loaded content</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon" aria-hidden="true">✅</span>
+                    <span>Theme and accessibility settings</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon" aria-hidden="true">✅</span>
+                    <span>Local component library</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon" aria-hidden="true">✅</span>
+                    <span>Design system documentation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Connection status monitoring
+        function updateConnectionStatus() {
+            const indicator = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                indicator.classList.add('online');
+                statusText.textContent = 'Connection restored!';
+                
+                // Auto-reload after 2 seconds if back online
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                indicator.classList.remove('online');
+                statusText.textContent = 'No internet connection';
+            }
+        }
+        
+        // Go to homepage function
+        function goHome() {
+            try {
+                if (navigator.onLine) {
+                    window.location.href = '/';
+                } else {
+                    // Try to navigate to cached home page
+                    window.location.href = '/#offline';
+                }
+            } catch (error) {
+                console.error('Navigation failed:', error);
+            }
+        }
+        
+        // Event listeners
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initial status check
+        updateConnectionStatus();
+        
+        // Keyboard navigation enhancement
+        document.addEventListener('keydown', function(event) {
+            // Enter or Space on buttons
+            if ((event.key === 'Enter' || event.key === ' ') && event.target.tagName === 'BUTTON') {
+                event.preventDefault();
+                event.target.click();
+            }
+            
+            // Escape key to focus on first button
+            if (event.key === 'Escape') {
+                const firstButton = document.querySelector('.button');
+                if (firstButton) {
+                    firstButton.focus();
+                }
+            }
+        });
+        
+        // Announce page load for screen readers
+        if ('speechSynthesis' in window) {
+            window.addEventListener('load', function() {
+                // Delayed announcement to ensure page is fully loaded
+                setTimeout(() => {
+                    const announcement = 'You are currently offline. The page has been loaded from cache. Some features are still available.';
+                    const utterance = new SpeechSynthesisUtterance(announcement);
+                    utterance.rate = 0.8;
+                    utterance.volume = 0.7;
+                    speechSynthesis.speak(utterance);
+                }, 1000);
+            });
+        }
+        
+        // Performance monitoring
+        if ('performance' in window) {
+            window.addEventListener('load', function() {
+                const loadTime = performance.now();
+                console.log(`Offline page loaded in ${loadTime.toFixed(2)}ms`);
+            });
+        }
+        
+        // Service Worker communication
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(function(registration) {
+                // Request background sync when possible
+                registration.sync.register('cogui-bg-sync').catch(function(error) {
+                    console.log('Background sync registration failed:', error);
+                });
+            });
+            
+            // Listen for messages from service worker
+            navigator.serviceWorker.addEventListener('message', function(event) {
+                if (event.data.type === 'DATA_UPDATED') {
+                    // Show notification that data has been synced
+                    const statusText = document.getElementById('statusText');
+                    statusText.textContent = 'Data synchronized!';
+                    
+                    setTimeout(() => {
+                        updateConnectionStatus();
+                    }, 2000);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
