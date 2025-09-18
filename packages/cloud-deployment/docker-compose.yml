@@ -1,0 +1,355 @@
+version: '3.8'
+
+services:
+  # CogUI Application
+  cogui-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: cogui-app
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Debug port
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DEBUG=cogui:*
+      - MONGODB_URI=mongodb://mongodb:27017/cogui_dev
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev-jwt-secret
+      - LOG_LEVEL=debug
+      - PROMETHEUS_ENABLED=true
+      - JAEGER_ENDPOINT=http://jaeger:14268/api/traces
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - logs_data:/app/logs
+    depends_on:
+      - mongodb
+      - redis
+      - prometheus
+      - jaeger
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6.0-focal
+    container_name: cogui-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=cogui_dev
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.stats().ok' | mongosh localhost:27017/cogui_dev --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7.0-alpine
+    container_name: cogui-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass devpassword
+    volumes:
+      - redis_data:/data
+      - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "devpassword", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: cogui-prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./configs/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: cogui-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_INSTALL_PLUGINS=grafana-kubernetes-app,grafana-clock-panel
+      - GF_RENDERING_SERVER_URL=http://renderer:8081/render
+      - GF_RENDERING_CALLBACK_URL=http://grafana:3000/
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana Image Renderer
+  renderer:
+    image: grafana/grafana-image-renderer:3.8.0
+    container_name: cogui-renderer
+    ports:
+      - "8081:8081"
+    environment:
+      - ENABLE_METRICS=true
+      - RENDERING_MODE=clustered
+      - RENDERING_CLUSTERING_MODE=browser
+      - RENDERING_CLUSTERING_MAX_CONCURRENCY=5
+    networks:
+      - cogui-network
+    restart: unless-stopped
+
+  # Jaeger Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    container_name: cogui-jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # jaeger.thrift over HTTP
+      - "14250:14250"   # gRPC
+      - "6831:6831/udp" # jaeger.thrift over UDP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - MEMORY_MAX_TRACES=10000
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch for Logs
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: cogui-elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana for Log Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: cogui-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./configs/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Logstash for Log Processing
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: cogui-logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      - LS_JAVA_OPTS=-Xmx256m -Xms256m
+    volumes:
+      - ./configs/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./configs/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - logs_data:/logs:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600/_node/stats"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NGINX Reverse Proxy
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: cogui-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx/ssl:/etc/nginx/ssl:ro
+      - ./public:/usr/share/nginx/html/public:ro
+    depends_on:
+      - cogui-app
+      - grafana
+      - prometheus
+    networks:
+      - cogui-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Accessibility Testing Service
+  a11y-service:
+    image: node:18-alpine
+    container_name: cogui-a11y-service
+    working_dir: /app
+    command: |
+      sh -c "
+        npm install -g @axe-core/cli pa11y lighthouse &&
+        while true; do
+          echo 'Running accessibility tests...'
+          axe http://cogui-app:3000 --reporter json --output /reports/axe-results.json || true
+          pa11y http://cogui-app:3000 --reporter json > /reports/pa11y-results.json || true
+          lighthouse http://cogui-app:3000 --output json --output-path /reports/lighthouse-results.json --chrome-flags='--headless --no-sandbox' || true
+          sleep 300
+        done
+      "
+    volumes:
+      - ./reports:/reports
+    depends_on:
+      - cogui-app
+    networks:
+      - cogui-network
+    restart: unless-stopped
+
+  # Performance Testing Service
+  performance-service:
+    image: grafana/k6:0.45.0
+    container_name: cogui-performance-service
+    volumes:
+      - ./tests/performance:/scripts
+      - ./reports:/reports
+    command: |
+      sh -c "
+        while true; do
+          echo 'Running performance tests...'
+          k6 run --out json=/reports/k6-results.json /scripts/load-test.js || true
+          sleep 600
+        done
+      "
+    depends_on:
+      - cogui-app
+    networks:
+      - cogui-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  logs_data:
+    driver: local
+
+networks:
+  cogui-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Development overrides
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+---
+version: '3.8'
+
+# Override file for production-like testing
+services:
+  cogui-app:
+    build:
+      target: production
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    volumes: []  # Remove volume mounts for production testing
+
+  # Add SSL termination for production testing
+  nginx:
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./configs/nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx/ssl:/etc/nginx/ssl:ro
+      - ./public:/usr/share/nginx/html/public:ro

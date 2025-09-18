@@ -1,0 +1,442 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cogui-app
+  namespace: cogui
+  labels:
+    app: cogui
+    component: frontend
+    version: v1.0.0
+    tier: application
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    cogui.dev/accessibility-compliant: "true"
+    cogui.dev/cognitive-adaptive: "true"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: cogui
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: cogui
+        component: frontend
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: cogui-service-account
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+      - name: cogui-app
+        image: cogui/cogui-app:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: COGUI_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: cogui-config
+              key: log-level
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: cogui-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: cogui-secrets
+              key: redis-url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cogui-secrets
+              key: jwt-secret
+        - name: VAPID_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cogui-secrets
+              key: vapid-public-key
+        - name: VAPID_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cogui-secrets
+              key: vapid-private-key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            httpHeaders:
+            - name: User-Agent
+              value: kubernetes/liveness-probe
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+            httpHeaders:
+            - name: User-Agent
+              value: kubernetes/readiness-probe
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/configs
+          readOnly: true
+        - name: cache-volume
+          mountPath: /app/cache
+        - name: logs-volume
+          mountPath: /app/logs
+        - name: temp-volume
+          mountPath: /tmp
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: config-volume
+        configMap:
+          name: cogui-config
+          defaultMode: 0644
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: "1Gi"
+      - name: logs-volume
+        emptyDir:
+          sizeLimit: "500Mi"
+      - name: temp-volume
+        emptyDir:
+          sizeLimit: "100Mi"
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cogui
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cogui-service
+  namespace: cogui
+  labels:
+    app: cogui
+    component: frontend
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: cogui
+    component: frontend
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 86400
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cogui-config
+  namespace: cogui
+  labels:
+    app: cogui
+data:
+  log-level: "info"
+  cors-origins: "https://cogui.dev,https://www.cogui.dev,https://app.cogui.dev"
+  rate-limit-window: "900000"
+  rate-limit-max: "100"
+  cache-ttl: "3600"
+  session-max-age: "86400000"
+  upload-max-size: "10MB"
+  accessibility-default: "true"
+  cognitive-adaptation: "true"
+  features.json: |
+    {
+      "userRegistration": true,
+      "emailVerification": true,
+      "socialLogin": true,
+      "fileUpload": true,
+      "realTimeAnalytics": true,
+      "aiRecommendations": true,
+      "exportData": true,
+      "apiDocumentation": true
+    }
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+    
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        
+        # Accessibility headers
+        add_header X-Content-Type-Options nosniff;
+        add_header X-Frame-Options DENY;
+        add_header X-XSS-Protection "1; mode=block";
+        add_header Referrer-Policy "strict-origin-when-cross-origin";
+        
+        # Performance optimizations
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        gzip on;
+        gzip_vary on;
+        gzip_comp_level 6;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/json
+            application/javascript
+            application/xml+rss
+            application/atom+xml;
+            
+        upstream cogui_backend {
+            least_conn;
+            server cogui-app:3000 max_fails=3 fail_timeout=30s;
+        }
+        
+        server {
+            listen 80;
+            server_name _;
+            
+            # Health check endpoint
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            
+            # Main application
+            location / {
+                proxy_pass http://cogui_backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                
+                # Accessibility timeouts
+                proxy_connect_timeout 5s;
+                proxy_send_timeout 30s;
+                proxy_read_timeout 30s;
+                
+                # WebSocket support
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+            }
+            
+            # Static assets with caching
+            location /static {
+                proxy_pass http://cogui_backend;
+                proxy_cache_valid 200 1d;
+                expires 1d;
+                add_header Cache-Control "public, immutable";
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cogui-service-account
+  namespace: cogui
+  labels:
+    app: cogui
+automountServiceAccountToken: false
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cogui-network-policy
+  namespace: cogui
+  labels:
+    app: cogui
+spec:
+  podSelector:
+    matchLabels:
+      app: cogui
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 3000
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to:
+    - podSelector:
+        matchLabels:
+          app: mongodb
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 27017
+    - protocol: TCP
+      port: 6379
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cogui-hpa
+  namespace: cogui
+  labels:
+    app: cogui
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cogui-app
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: cogui-pdb
+  namespace: cogui
+  labels:
+    app: cogui
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: cogui
+      component: frontend
