@@ -1,0 +1,63 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "outDir": "./out",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@/generators/*": ["generators/*"],
+      "@/analyzers/*": ["analyzers/*"],
+      "@/services/*": ["services/*"],
+      "@/validators/*": ["validators/*"],
+      "@/views/*": ["views/*"],
+      "@/utils/*": ["utils/*"],
+      "@/types/*": ["types/*"],
+      "@/templates/*": ["templates/*"],
+      "@/cli/*": ["cli/*"]
+    },
+    "typeRoots": [
+      "node_modules/@types",
+      "./src/types"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "out",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "src/design-tools/**/*"
+  ],
+  "vscode": {
+    "compilerOptions": {
+      "module": "ES6",
+      "target": "ES6"
+    }
+  }
+}

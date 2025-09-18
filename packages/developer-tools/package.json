@@ -1,0 +1,281 @@
+{
+  "name": "@cogui/developer-tools",
+  "displayName": "CogUI Developer Tools",
+  "description": "Complete developer toolkit for CogUI - VS Code Extension, CLI, and Design Tools",
+  "version": "1.0.0",
+  "publisher": "cogui",
+  "engines": {
+    "vscode": "^1.70.0",
+    "node": ">=18.0.0"
+  },
+  "categories": [
+    "Extension Packs",
+    "Themes",
+    "Snippets",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "cogui",
+    "accessibility",
+    "cognitive-ui",
+    "adaptive-ui",
+    "developer-tools",
+    "design-system"
+  ],
+  "activationEvents": [
+    "onCommand:cogui.createComponent",
+    "onCommand:cogui.generateTheme",
+    "onCommand:cogui.analyzeAccessibility",
+    "onCommand:cogui.startDevServer",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact"
+  ],
+  "main": "./out/extension.js",
+  "bin": {
+    "cogui": "./bin/cogui.js",
+    "cogui-cli": "./bin/cogui.js"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "cogui.createComponent",
+        "title": "Create CogUI Component",
+        "category": "CogUI"
+      },
+      {
+        "command": "cogui.generateTheme",
+        "title": "Generate Theme",
+        "category": "CogUI"
+      },
+      {
+        "command": "cogui.analyzeAccessibility",
+        "title": "Analyze Accessibility",
+        "category": "CogUI"
+      },
+      {
+        "command": "cogui.startDevServer",
+        "title": "Start Development Server",
+        "category": "CogUI"
+      },
+      {
+        "command": "cogui.openDesignSystem",
+        "title": "Open Design System",
+        "category": "CogUI"
+      },
+      {
+        "command": "cogui.validateComponents",
+        "title": "Validate Components",
+        "category": "CogUI"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "cogui.createComponent",
+          "when": "explorerResourceIsFolder",
+          "group": "cogui@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "cogui.analyzeAccessibility",
+          "when": "editorLangId == typescriptreact || editorLangId == javascriptreact",
+          "group": "cogui@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "cogui.createComponent"
+        },
+        {
+          "command": "cogui.generateTheme"
+        },
+        {
+          "command": "cogui.analyzeAccessibility"
+        },
+        {
+          "command": "cogui.startDevServer"
+        },
+        {
+          "command": "cogui.openDesignSystem"
+        },
+        {
+          "command": "cogui.validateComponents"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "typescript",
+        "path": "./snippets/typescript.json"
+      },
+      {
+        "language": "typescriptreact",
+        "path": "./snippets/react.json"
+      },
+      {
+        "language": "javascript",
+        "path": "./snippets/javascript.json"
+      },
+      {
+        "language": "javascriptreact",
+        "path": "./snippets/react.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "CogUI Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/cogui-dark.json"
+      },
+      {
+        "label": "CogUI Light",
+        "uiTheme": "vs",
+        "path": "./themes/cogui-light.json"
+      },
+      {
+        "label": "CogUI High Contrast",
+        "uiTheme": "hc-black",
+        "path": "./themes/cogui-high-contrast.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "CogUI Developer Tools",
+      "properties": {
+        "cogui.autoImport": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically import CogUI components"
+        },
+        "cogui.accessibility.enableLinting": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable accessibility linting"
+        },
+        "cogui.theme.autoDetect": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-detect theme preferences"
+        },
+        "cogui.components.defaultPath": {
+          "type": "string",
+          "default": "src/components",
+          "description": "Default path for new components"
+        },
+        "cogui.server.port": {
+          "type": "number",
+          "default": 3000,
+          "description": "Development server port"
+        },
+        "cogui.server.autoStart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-start development server"
+        }
+      }
+    },
+    "taskDefinitions": [
+      {
+        "type": "cogui",
+        "required": [
+          "task"
+        ],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "The CogUI task to execute"
+          },
+          "args": {
+            "type": "array",
+            "description": "Additional arguments"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "build:cli": "tsc -p ./src/cli/tsconfig.json",
+    "build:design-tools": "webpack --mode production",
+    "build:all": "npm run compile && npm run build:cli && npm run build:design-tools",
+    "dev:cli": "ts-node src/cli/index.ts",
+    "dev:design-tools": "webpack serve --mode development",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode": "^1.1.37",
+    "commander": "^9.4.1",
+    "chalk": "^4.1.2",
+    "inquirer": "^8.2.5",
+    "fs-extra": "^11.1.1",
+    "glob": "^8.1.0",
+    "handlebars": "^4.7.7",
+    "ora": "^5.4.1",
+    "semver": "^7.5.4",
+    "axios": "^1.4.0",
+    "cheerio": "^1.0.0-rc.12",
+    "postcss": "^8.4.25",
+    "autoprefixer": "^10.4.14",
+    "cssnano": "^6.0.1",
+    "sass": "^1.63.6",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.0",
+    "jsonschema": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.70.0",
+    "@types/node": "^18.16.19",
+    "@types/fs-extra": "^11.0.1",
+    "@types/glob": "^8.1.0",
+    "@types/inquirer": "^8.2.6",
+    "@types/lodash": "^4.14.195",
+    "@types/uuid": "^9.0.2",
+    "@types/mocha": "^10.0.1",
+    "@types/cheerio": "^0.22.31",
+    "typescript": "^5.1.6",
+    "eslint": "^8.44.0",
+    "@typescript-eslint/eslint-plugin": "^6.1.0",
+    "@typescript-eslint/parser": "^6.1.0",
+    "mocha": "^10.2.0",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
+    "html-webpack-plugin": "^5.5.3",
+    "css-loader": "^6.8.1",
+    "sass-loader": "^13.3.2",
+    "ts-loader": "^9.4.4",
+    "vsce": "^2.15.0",
+    "ts-node": "^10.9.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cogui/cogui.git",
+    "directory": "packages/developer-tools"
+  },
+  "bugs": {
+    "url": "https://github.com/cogui/cogui/issues"
+  },
+  "homepage": "https://cogui.dev/developer-tools",
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "badges": [
+    {
+      "url": "https://img.shields.io/badge/accessibility-WCAG%202.1-green",
+      "href": "https://www.w3.org/WAI/WCAG21/quickref/",
+      "description": "WCAG 2.1 Compliant"
+    }
+  ]
+}
