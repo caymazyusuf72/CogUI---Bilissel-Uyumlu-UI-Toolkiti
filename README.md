@@ -1,4 +1,4 @@
-# 🧠 CogUI - Bilişsel Uyumlu UI Toolkit
+# 🧠 CogUI - Bilişsel Uyumlu UI Toolkit * geliştirme aşamasında *
 
 CogUI, nöro-çeşitli kullanıcılar için bilişsel yükü azaltan, kişiselleştirilebilir ve erişilebilir UI bileşenleri sunan açık kaynak toolkit'idir. Kullanıcıların bilişsel durumlarını gerçek zamanlı olarak analiz ederek UI'yi otomatik olarak adapte eder.
 
